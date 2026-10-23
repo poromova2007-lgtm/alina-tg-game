@@ -1,6 +1,7 @@
 const express = require('express');
 const http = require('http');
 const path = require('path');
+const fs = require('fs');
 const multer = require('multer');
 const WebSocket = require('ws');
 const { Pool } = require('pg');
@@ -10,20 +11,32 @@ const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 const PORT = process.env.PORT || 3000;
 
+// Создаем папку для медиа, если ее нет
+const MEDIA_DIR = path.join(__dirname, 'public', 'media');
+if (!fs.existsSync(MEDIA_DIR)) fs.mkdirSync(MEDIA_DIR, { recursive: true });
+
 const pool = new Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
 pool.query(`CREATE TABLE IF NOT EXISTS game_data (id SERIAL PRIMARY KEY, data JSONB)`).catch(console.error);
 
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
+// Настройка сохранения файлов НА ДИСК
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, MEDIA_DIR),
+  filename: (req, file, cb) => cb(null, Date.now() + '-' + Math.round(Math.random() * 1E9) + path.extname(file.originalname))
+});
+const upload = multer({ storage: storage, limits: { fileSize: 50 * 1024 * 1024 } });
+
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.json({ limit: '15mb' }));
+app.use(express.json({ limit: '10mb' }));
 
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 app.get('/phone', (req, res) => res.sendFile(path.join(__dirname, 'public', 'phone.html')));
 
+// Загрузка файла на сервер (возвращает ссылку)
 app.post('/api/upload', upload.single('file'), (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'Нет файла' });
-  const base64 = req.file.buffer.toString('base64');
-  res.json({ ok: true, url: `data:${req.file.mimetype};base64,${base64}` });
+  // Возвращаем ссылку на файл, которая будет работать в браузере
+  const fileUrl = '/media/' + req.file.filename;
+  res.json({ ok: true, url: fileUrl });
 });
 
 app.get('/api/game', async (req, res) => {
