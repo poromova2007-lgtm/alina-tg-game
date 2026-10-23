@@ -8,6 +8,7 @@
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   body { font-family: Georgia, serif; background: linear-gradient(135deg, #ffe4ec, #ffc2d4); min-height: 100vh; color: #4a2c17; padding: 20px 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
   h1 { font-size: 1.8em; color: #6b4226; margin-bottom: 20px; }
+  
   #joinScreen { width: 100%; max-width: 400px; background: #fff5f0; border-radius: 24px; padding: 30px 25px; border: 3px solid #ff9ebb; }
   label { display: block; font-weight: bold; margin-bottom: 10px; font-size: 1.1em; }
   input, select { width: 100%; padding: 15px; border: 3px solid #ff9ebb; border-radius: 14px; font-size: 1.2em; font-family: inherit; text-align: center; margin-bottom: 20px; background: white; }
@@ -26,7 +27,7 @@
   #sendAnswerBtn { background: #4a9d4a; }
   
   #voteForm { display: none; width: 100%; flex-direction: column; gap: 10px; }
-  .vote-btn { background: #fff; color: #4a2c17; border: 3px solid #ff9ebb; font-size: 1.2em; }
+  .vote-btn { background: #fff; color: #4a2c17; border: 3px solid #ff9ebb; font-size: 1.2em; padding: 15px; }
   .vote-btn.selected { background: #7ec97e; color: white; border-color: #4a9d4a; }
 </style>
 </head>
@@ -116,6 +117,7 @@
   }
 
   function updateState(state) {
+    // Показываем выбор команды, если ведущая включила командный режим
     if (state.teams && state.teams.length > 0 && teamSelect.options.length === 0) {
       teamSelectBox.style.display = 'block';
       state.teams.forEach(t => {
@@ -124,6 +126,8 @@
     }
 
     const q = state.currentQuestion;
+    
+    // Если вопрос закрыт
     if (!q) {
       currentQuestion = null; hasBuzzed = false; hasVoted = false;
       buzzBtn.style.display = 'none'; answerForm.style.display = 'none'; voteForm.style.display = 'none';
@@ -131,6 +135,7 @@
       return;
     }
 
+    // Если открылся НОВЫЙ вопрос
     if (!currentQuestion || currentQuestion.row !== q.row || currentQuestion.catIdx !== q.catIdx) {
       currentQuestion = q; hasBuzzed = false; hasVoted = false;
       answerForm.style.display = 'none'; answerInput.value = '';
@@ -157,9 +162,11 @@
       }
     }
 
+    // Логика для обычных вопросов
     if (!q.isVote) {
       const iAmWrong = state.answeredWrong.includes(myId);
       const someoneBuzzed = state.buzzQueue.length > 0;
+      
       if (hasBuzzed) {
         buzzBtn.style.display = 'none';
       } else if (iAmWrong) {
@@ -181,7 +188,15 @@
 
   nameInput.addEventListener('keydown', e => { if (e.key === 'Enter') joinBtn.click(); });
   buzzBtn.addEventListener('click', () => { if (buzzBtn.disabled || hasBuzzed) return; if (ws) ws.send(JSON.stringify({ type: 'buzz' })); });
-  sendAnswerBtn.addEventListener('click', () => { const text = answerInput.value.trim(); if (!text) return; if (ws) { ws.send(JSON.stringify({ type: 'answer', text })); answerForm.style.display = 'none'; statusText.textContent = 'Ответ отправлен!'; } });
+  sendAnswerBtn.addEventListener('click', () => { 
+    const text = answerInput.value.trim(); 
+    if (!text) return; 
+    if (ws) { 
+      ws.send(JSON.stringify({ type: 'answer', text })); 
+      answerForm.style.display = 'none'; 
+      statusText.textContent = 'Ответ отправлен!'; 
+    } 
+  });
   answerInput.addEventListener('keydown', e => { if (e.key === 'Enter') sendAnswerBtn.click(); });
 
   connectWS();
