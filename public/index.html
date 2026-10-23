@@ -8,7 +8,7 @@
   :root { --bg1: #ffe4ec; --bg2: #ffc2d4; --brown: #6b4226; --pink-deep: #ff9ebb; --text: #4a2c17; }
   body { font-family: sans-serif; background: linear-gradient(135deg, var(--bg1), var(--bg2)); min-height: 100vh; color: var(--text); padding: 20px; margin: 0; }
   h1 { text-align: center; color: var(--brown); font-size: 3em; text-shadow: 3px 3px 0 var(--pink-deep); margin: 10px 0; }
-  .btn { padding: 12px 25px; border-radius: 30px; border: none; background: var(--brown); color: white; font-weight: bold; cursor: pointer; font-size: 1em; margin: 5px; }
+  .btn { padding: 10px 20px; border-radius: 20px; border: none; background: var(--brown); color: white; font-weight: bold; cursor: pointer; font-size: 1em; margin: 5px; }
   .btn.pink { background: var(--pink-deep); color: var(--text); }
   .btn.green { background: #7ec97e; color: white; }
   .btn.red { background: #c04040; color: white; }
@@ -25,27 +25,39 @@
   .team-score { background: #fff; padding: 10px 20px; border-radius: 15px; font-weight: bold; border: 2px solid var(--pink-deep); }
   #board { display: grid; gap: 10px; background: rgba(255,255,255,.4); padding: 15px; border-radius: 20px; }
   .category-header { background: var(--brown); color: white; padding: 15px; text-align: center; border-radius: 10px; font-weight: bold; }
-  .cell { background: var(--pink-deep); color: var(--text); padding: 25px; text-align: center; border-radius: 10px; font-size: 1.5em; font-weight: bold; cursor: pointer; border: 2px solid white; }
+  .cell { background: var(--pink-deep); color: var(--text); padding: 25px; text-align: center; border-radius: 10px; font-size: 1.5em; font-weight: bold; cursor: pointer; border: 2px solid white; position: relative; }
   .cell:hover { transform: scale(1.02); }
   .cell.used { opacity: 0.3; pointer-events: none; }
+  .cell.casino-cell { background: linear-gradient(145deg, #ffb347, var(--pink-deep)); color: #fff; }
+  .cell.casino-cell::before { content: '🎰'; position: absolute; top: 3px; left: 6px; font-size: .5em; }
 
   /* МОДАЛКИ */
   .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 100; align-items: center; justify-content: center; padding: 20px; }
   .modal.show { display: flex; }
-  .modal-content { background: #fff5f0; padding: 30px; border-radius: 20px; max-width: 800px; width: 100%; max-height: 90vh; overflow-y: auto; text-align: center; border: 4px solid var(--pink-deep); }
-  
-  /* РЕДАКТОР */
-  #editorModal { z-index: 200; }
-  .editor-tabs { display: flex; gap: 10px; margin-bottom: 20px; justify-content: center; flex-wrap: wrap; }
-  .editor-tab { padding: 8px 15px; background: #eee; border-radius: 10px; cursor: pointer; font-weight: bold; }
-  .editor-tab.active { background: var(--brown); color: white; }
-  .question-block { background: white; padding: 15px; border-radius: 10px; margin-bottom: 10px; text-align: left; border: 1px solid #ddd; }
-  textarea, input[type="text"] { width: 100%; padding: 8px; margin-bottom: 5px; border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box; }
+  .modal-content { background: #fff5f0; padding: 30px; border-radius: 20px; max-width: 900px; width: 100%; max-height: 90vh; overflow-y: auto; border: 4px solid var(--pink-deep); }
 
-  /* ГОЛОСОВАНИЕ */
+  /* РЕДАКТОР */
+  #editorModal { z-index: 200; align-items: flex-start; }
+  #editorModal .modal-content { max-width: 1400px; height: 95vh; display: flex; flex-direction: column; }
+  .editor-layout { display: flex; gap: 20px; flex-grow: 1; overflow: hidden; }
+  .editor-sidebar { width: 250px; flex-shrink: 0; background: #ffe4ec; border-radius: 15px; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;}
+  .editor-main { flex-grow: 1; overflow-y: auto; background: #fff; padding: 15px; border-radius: 15px; border: 1px solid #ddd; }
+  
+  .editor-tabs { display: flex; gap: 8px; margin-bottom: 15px; flex-wrap: wrap; }
+  .editor-tab { padding: 8px 15px; background: #eee; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 0.9em; }
+  .editor-tab.active { background: var(--brown); color: white; }
+  
+  .editor-category { background: #fdfdfd; border: 2px solid var(--pink-deep); padding: 15px; border-radius: 15px; margin-bottom: 15px; }
+  .question-block { background: #fff; padding: 15px; border-radius: 10px; margin-bottom: 10px; border: 1px solid #ffb347; }
+  textarea, input[type="text"], input[type="number"], select { width: 100%; padding: 8px; margin-bottom: 8px; border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box; font-family: inherit;}
+
+  /* ПРЕДПРОСМОТР */
   .vote-option { background: #eee; padding: 15px; margin: 10px 0; border-radius: 10px; font-size: 1.2em; position: relative; overflow: hidden; }
   .vote-bar { position: absolute; left: 0; top: 0; bottom: 0; background: #7ec97e; z-index: 1; transition: width 0.5s; }
   .vote-text { position: relative; z-index: 2; font-weight: bold; }
+  
+  .buzz-card { display: flex; align-items: center; justify-content: space-between; background: #ffb347; color: #fff; padding: 12px 20px; border-radius: 14px; font-weight: bold; margin-bottom: 10px; }
+  .buzz-card.first { background: #c04040; font-size: 1.15em; }
 </style>
 </head>
 <body>
@@ -67,7 +79,7 @@
     <div id="teamInputs"></div>
   </div>
 
-  <button class="btn green" style="width: 100%; margin-top: 20px;" onclick="startGame()">🚀 Начать игру</button>
+  <button class="btn green" style="width: 100%; margin-top: 20px; font-size: 1.2em;" onclick="startGame()">🚀 Начать игру</button>
   <button class="btn blue" style="width: 100%; margin-top: 10px;" onclick="openEditor()">⚙️ Редактор вопросов</button>
 </div>
 
@@ -90,17 +102,33 @@
 <!-- МОДАЛКА РЕДАКТОРА -->
 <div class="modal" id="editorModal">
   <div class="modal-content">
-    <h2>Редактор</h2>
-    <div class="editor-tabs" id="editorTabs"></div>
-    <div id="editorContent"></div>
-    <button class="btn green" onclick="saveGameData()">💾 Сохранить вопросы</button>
-    <button class="btn red" onclick="document.getElementById('editorModal').classList.remove('show')">Закрыть</button>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+      <h2 style="margin:0; color:var(--brown);">✏️ Редактор</h2>
+      <div>
+        <button class="btn green" onclick="saveGameData()">💾 Сохранить вопросы</button>
+        <button class="btn red" onclick="document.getElementById('editorModal').classList.remove('show')">Закрыть</button>
+      </div>
+    </div>
+    <div class="editor-layout">
+      <div class="editor-sidebar">
+        <h3 style="text-align:center; color:var(--brown); margin:0 0 10px 0;">Раунды</h3>
+        <div id="editorRoundsList"></div>
+        <button class="btn pink" onclick="addRound()">➕ Добавить раунд</button>
+        
+        <hr style="border:1px dashed #ccc; width:100%; margin:10px 0;">
+        <button class="btn" onclick="openThemeEditor()">🎨 Оформление</button>
+        <button class="btn" onclick="closeEditorAndPreview()">👁 Предпросмотр</button>
+      </div>
+      <div class="editor-main" id="editorContent">
+        <!-- Сюда рендерится редактор -->
+      </div>
+    </div>
   </div>
 </div>
 
 <script>
   let ws;
-  let gameData = { rounds: [{ name: "Раунд 1", prices: [100, 200, 300, 400, 500], categories: [] }] };
+  let gameData = { settings: {}, rounds: [] };
   let state = { players: [], teams: [], currentQuestion: null, votes: {}, timer: 0 };
   let isTeamMode = false;
   let edRound = 0;
@@ -121,8 +149,7 @@
 
   // ============ НАСТРОЙКА И СТАРТ ============
   function toggleFormat() {
-    const format = document.getElementById('gameFormat').value;
-    isTeamMode = (format === 'teams');
+    isTeamMode = (document.getElementById('gameFormat').value === 'teams');
     document.getElementById('teamsSetup').style.display = isTeamMode ? 'block' : 'none';
     if (isTeamMode) renderTeamInputs();
   }
@@ -156,15 +183,15 @@
       const res = await fetch('/api/game');
       const data = await res.json();
       if (data && data.rounds) gameData = data;
-    } catch(e) { console.log('База пуста, используем стандартную игру'); }
+    } catch(e) { console.log('Ошибка загрузки, создаем новую'); }
     
-    // Если вопросов нет, создаем демо-структуру
-    if (gameData.rounds[0].categories.length === 0) {
+    if (!gameData.rounds || gameData.rounds.length === 0) {
+      gameData.rounds = [{ name: "Раунд 1", prices: [100, 200, 300, 400, 500], categories: [] }];
       for (let c = 0; c < 5; c++) {
         gameData.rounds[0].categories.push({
           name: `Категория ${c+1}`,
           questions: gameData.rounds[0].prices.map((p, i) => ({
-            price: p, question: `Вопрос ${i+1}`, answer: `Ответ ${i+1}`, mediaUrl: '', isTest: false, isVote: false, choices: ['', '', '']
+            price: p, question: `Вопрос ${i+1}`, answer: `Ответ ${i+1}`, mediaUrl: '', isTest: false, isVote: false, isCasino: false, choices: ['', '', '']
           }))
         });
       }
@@ -177,15 +204,9 @@
     const bar = document.getElementById('teamsBar');
     bar.innerHTML = '';
     if (state.teams && state.teams.length > 0) {
-      state.teams.forEach(t => {
-        bar.innerHTML += `<div class="team-score">${t.name}: <span style="color:#6b4226">${t.score}</span></div>`;
-      });
+      state.teams.forEach(t => { bar.innerHTML += `<div class="team-score">${t.name}: <span style="color:#6b4226">${t.score}</span></div>`; });
     } else {
-      // Личный зачет
-      const sorted = [...state.players].sort((a,b) => b.score - a.score);
-      sorted.forEach(p => {
-        bar.innerHTML += `<div class="team-score" style="font-size:0.9em; padding:5px 15px;">${p.name}: ${p.score}</div>`;
-      });
+      [...state.players].sort((a,b) => b.score - a.score).forEach(p => { bar.innerHTML += `<div class="team-score" style="font-size:0.9em; padding:5px 15px;">${p.name}: ${p.score}</div>`; });
     }
   }
 
@@ -195,14 +216,14 @@
     const rData = gameData.rounds[edRound];
     board.style.gridTemplateColumns = `repeat(${rData.categories.length}, 1fr)`;
     
-    rData.categories.forEach(c => {
-      const h = document.createElement('div'); h.className = 'category-header'; h.textContent = c.name; board.appendChild(h);
-    });
+    rData.categories.forEach(c => { const h = document.createElement('div'); h.className = 'category-header'; h.textContent = c.name; board.appendChild(h); });
     
     rData.prices.forEach((p, row) => {
       rData.categories.forEach((c, ci) => {
-        const cell = document.createElement('div');
-        cell.className = 'cell';
+        const q = c.questions[row];
+        if (!q) return;
+        const cell = document.createElement('div'); cell.className = 'cell';
+        if (q.isCasino) cell.classList.add('casino-cell');
         cell.textContent = p;
         cell.onclick = () => openQuestion(ci, row, cell);
         board.appendChild(cell);
@@ -220,25 +241,27 @@
     const content = document.getElementById('questionModalContent');
     
     let html = `<h2 style="color:#6b4226;">${q.question}</h2>`;
-    if (q.mediaUrl) html += `<img src="${q.mediaUrl}" style="max-width:100%; max-height:300px; border-radius:10px; margin:10px 0;">`;
+    if (q.mediaUrl) {
+      if (q.mediaUrl.match(/\.(mp4|webm|ogg)/)) html += `<video src="${q.mediaUrl}" controls style="max-width:100%; max-height:300px; border-radius:10px; margin:10px 0;"></video>`;
+      else if (q.mediaUrl.match(/\.(mp3|wav|m4a)/)) html += `<audio src="${q.mediaUrl}" controls style="width:100%; margin:10px 0;"></audio>`;
+      else html += `<img src="${q.mediaUrl}" style="max-width:100%; max-height:300px; border-radius:10px; margin:10px 0;">`;
+    }
     
     if (q.isVote) {
       html += `<div id="timerBox" style="font-size:2em; color:#c04040; font-weight:bold; margin:10px 0;">⏳ ${state.timer} сек.</div>`;
       html += `<div id="voteResults"></div>`;
     } else if (q.isTest) {
       html += `<div style="margin-top:20px; display:flex; flex-direction:column; gap:10px;">`;
-      q.choices.forEach((ch, i) => {
-        html += `<button class="btn" style="background:#fff; border:2px solid #ff9ebb; color:#4a2c17;" onclick="revealAnswer()">${ch}</button>`;
-      });
+      q.choices.forEach((ch, i) => { if(ch) html += `<button class="btn" style="background:#fff; border:2px solid #ff9ebb; color:#4a2c17;" onclick="revealAnswer()">${ch}</button>`; });
       html += `</div>`;
+    } else if (q.isCasino) {
+      html += `<div style="padding:20px; background:#fff0f5; border-radius:15px; margin:20px 0; font-size:1.5em; font-weight:bold;">🎰 КАЗИНО — ${q.price} ОЧКОВ</div>`;
+      html += `<button class="btn" onclick="revealAnswer()">Показать ответ</button>`;
     } else {
       html += `<button class="btn" onclick="revealAnswer()">Показать ответ</button>`;
     }
     
-    html += `<div id="answerBox" style="display:none; margin-top:20px; padding:20px; background:#fff0f5; border-radius:15px; border:2px dashed #a4785c;">
-      <h3 style="color:#6b4226;">Ответ: ${q.answer}</h3>
-    </div>`;
-    
+    html += `<div id="answerBox" style="display:none; margin-top:20px; padding:20px; background:#fff0f5; border-radius:15px; border:2px dashed #a4785c;"><h3 style="color:#6b4226;">Ответ: ${q.answer}</h3></div>`;
     html += `<div id="buzzList" style="margin-top:20px; text-align:left;"></div>`;
     html += `<div style="margin-top:20px;"><button class="btn red" onclick="closeQuestion()">Закрыть вопрос</button></div>`;
     
@@ -249,35 +272,24 @@
   }
 
   function revealAnswer() { document.getElementById('answerBox').style.display = 'block'; }
-
-  function closeQuestion() {
-    ws.send(JSON.stringify({ type: 'closeQuestion' }));
-    document.getElementById('questionModal').classList.remove('show');
-  }
+  function closeQuestion() { ws.send(JSON.stringify({ type: 'closeQuestion' })); document.getElementById('questionModal').classList.remove('show'); }
 
   function updateQuestionUI() {
     if (!state.currentQuestion) return;
     
-    // Таймер
     const timerBox = document.getElementById('timerBox');
     if (timerBox) timerBox.textContent = `⏳ ${state.timer} сек.`;
 
-    // Список нажавших
     const buzzList = document.getElementById('buzzList');
     if (buzzList && !state.currentQuestion.isVote) {
       buzzList.innerHTML = '<h3>Кто нажал:</h3>';
       state.buzzQueue.forEach((b, i) => {
         const isFirst = i === 0;
         buzzList.innerHTML += `
-          <div style="background:${isFirst ? '#ffb347' : '#eee'}; padding:10px; border-radius:10px; margin:5px 0; display:flex; justify-content:space-between; align-items:center;">
+          <div class="buzz-card ${isFirst ? 'first' : ''}">
             <b>${i+1}. ${b.playerName}</b>
             <span>${b.answer ? '💬 ' + b.answer : '...'}</span>
-            ${isFirst ? `
-              <div>
-                <button class="btn green" style="padding:5px 15px;" onclick="scoreCorrect()">✅ Верно</button>
-                <button class="btn red" style="padding:5px 15px;" onclick="scoreWrong()">❌ Неверно</button>
-              </div>
-            ` : ''}
+            ${isFirst ? `<div><button class="btn green" style="padding:5px 15px;" onclick="scoreCorrect()">✅ Верно</button><button class="btn red" style="padding:5px 15px;" onclick="scoreWrong()">❌ Неверно</button></div>` : ''}
           </div>
         `;
       });
@@ -288,97 +300,164 @@
     if (!state.currentQuestion || !state.currentQuestion.isVote) return;
     const container = document.getElementById('voteResults');
     if (!container) return;
-    
-    const counts = {};
-    Object.values(state.votes).forEach(v => counts[v] = (counts[v] || 0) + 1);
+    const counts = {}; Object.values(state.votes).forEach(v => counts[v] = (counts[v] || 0) + 1);
     const total = Object.keys(state.votes).length || 1;
-    
     let html = '';
     state.currentQuestion.choices.forEach((choice, idx) => {
-      const votes = counts[idx] || 0;
-      const percent = Math.round((votes / total) * 100);
+      if(!choice) return;
+      const votes = counts[idx] || 0; const percent = Math.round((votes / total) * 100);
       const isWinner = state.currentQuestion.winningChoice === idx;
-      html += `
-        <div class="vote-option">
-          <div class="vote-bar" style="width:${percent}%; background:${isWinner ? '#7ec97e' : '#ffb347'}"></div>
-          <div class="vote-text">${choice} — ${votes} голосов (${percent}%)</div>
-        </div>
-      `;
+      html += `<div class="vote-option"><div class="vote-bar" style="width:${percent}%; background:${isWinner ? '#7ec97e' : '#ffb347'}"></div><div class="vote-text">${choice} — ${votes} голосов (${percent}%)</div></div>`;
     });
     container.innerHTML = html;
   }
 
-  function scoreCorrect() {
-    const first = state.buzzQueue[0];
-    if (!first) return;
-    ws.send(JSON.stringify({ type: 'correct', playerId: first.playerId, delta: state.currentQuestion.price }));
-    revealAnswer();
-  }
-
-  function scoreWrong() {
-    const first = state.buzzQueue[0];
-    if (!first) return;
-    ws.send(JSON.stringify({ type: 'wrong', playerId: first.playerId }));
-  }
+  function scoreCorrect() { const first = state.buzzQueue[0]; if (!first) return; ws.send(JSON.stringify({ type: 'correct', playerId: first.playerId, delta: state.currentQuestion.price })); revealAnswer(); }
+  function scoreWrong() { const first = state.buzzQueue[0]; if (!first) return; ws.send(JSON.stringify({ type: 'wrong', playerId: first.playerId })); }
 
   // ============ РЕДАКТОР ============
   function openEditor() {
     document.getElementById('editorModal').classList.add('show');
-    renderEditor();
+    renderEditorSidebar();
+    renderEditorMain();
   }
 
-  function renderEditor() {
-    const tabs = document.getElementById('editorTabs');
+  function renderEditorSidebar() {
+    const list = document.getElementById('editorRoundsList');
+    list.innerHTML = '';
+    gameData.rounds.forEach((r, idx) => {
+      const div = document.createElement('div');
+      div.className = 'editor-tab' + (idx === edRound ? ' active' : '');
+      div.style.display = 'block';
+      div.style.marginBottom = '5px';
+      div.textContent = r.name || 'Раунд ' + (idx+1);
+      div.onclick = () => { edRound = idx; renderEditorSidebar(); renderEditorMain(); };
+      list.appendChild(div);
+    });
+  }
+
+  function addRound() {
+    const p = [100, 200, 300, 400, 500];
+    const cats = [];
+    for (let c = 0; c < 5; c++) {
+      cats.push({ name: `Новая категория`, questions: p.map(price => ({ price, question: "", answer: "", mediaUrl: "", isTest: false, isVote: false, isCasino: false, choices: ['', '', ''] })) });
+    }
+    gameData.rounds.push({ name: `Раунд ${gameData.rounds.length+1}`, prices: p, categories: cats });
+    edRound = gameData.rounds.length - 1;
+    renderEditorSidebar();
+    renderEditorMain();
+  }
+
+  function renderEditorMain() {
     const content = document.getElementById('editorContent');
-    tabs.innerHTML = `<div class="editor-tab active">Раунд 1</div>`;
-    
-    const rData = gameData.rounds[0];
     content.innerHTML = '';
+    const rData = gameData.rounds[edRound];
     
+    let topBar = document.createElement('div');
+    topBar.style.display = 'flex'; topBar.style.gap = '10px'; topBar.style.marginBottom = '15px';
+    topBar.innerHTML = `<button class="btn pink" onclick="addCategory()">➕ Добавить категорию</button>`;
+    content.appendChild(topBar);
+
     rData.categories.forEach((cat, ci) => {
-      let html = `<div style="background:#ffe4ec; padding:15px; border-radius:15px; margin-bottom:20px;">
-        <input type="text" value="${cat.name}" onchange="gameData.rounds[0].categories[${ci}].name = this.value" style="font-weight:bold; font-size:1.2em;">
+      const catDiv = document.createElement('div');
+      catDiv.className = 'editor-category';
+      catDiv.innerHTML = `
+        <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+          <input type="text" value="${cat.name}" onchange="gameData.rounds[${edRound}].categories[${ci}].name = this.value" style="font-weight:bold; font-size:1.2em; width:70%;">
+          <button class="btn red" onclick="deleteCategory(${ci})">Удалить</button>
+        </div>
       `;
       
       cat.questions.forEach((q, qi) => {
-        html += `<div class="question-block">
-          <b>💰 ${q.price}</b><br>
+        const qDiv = document.createElement('div');
+        qDiv.className = 'question-block';
+        qDiv.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <b style="color:var(--brown);">💰 ${q.price}</b>
+            <div>
+              <label><input type="checkbox" ${q.isVote ? 'checked' : ''} onchange="gameData.rounds[${edRound}].categories[${ci}].questions[${qi}].isVote = this.checked"> Голосование</label>
+              <label style="margin-left:10px;"><input type="checkbox" ${q.isTest ? 'checked' : ''} onchange="gameData.rounds[${edRound}].categories[${ci}].questions[${qi}].isTest = this.checked"> Тест</label>
+              <label style="margin-left:10px;"><input type="checkbox" ${q.isCasino ? 'checked' : ''} onchange="gameData.rounds[${edRound}].categories[${ci}].questions[${qi}].isCasino = this.checked"> Казино</label>
+            </div>
+          </div>
           <label>Вопрос:</label>
-          <textarea rows="2" onchange="gameData.rounds[0].categories[${ci}].questions[${qi}].question = this.value">${q.question}</textarea>
+          <textarea rows="2" onchange="gameData.rounds[${edRound}].categories[${ci}].questions[${qi}].question = this.value">${q.question}</textarea>
           <label>Ответ:</label>
-          <textarea rows="2" onchange="gameData.rounds[0].categories[${ci}].questions[${qi}].answer = this.value">${q.answer}</textarea>
+          <textarea rows="2" onchange="gameData.rounds[${edRound}].categories[${ci}].questions[${qi}].answer = this.value">${q.answer}</textarea>
           
-          <label>Фото/Видео (URL или загрузка):</label><br>
-          <input type="text" value="${q.mediaUrl || ''}" placeholder="Ссылка на медиа" onchange="gameData.rounds[0].categories[${ci}].questions[${qi}].mediaUrl = this.value">
-          
-          <div style="margin-top:10px; display:flex; gap:20px;">
-            <label><input type="checkbox" ${q.isVote ? 'checked' : ''} onchange="gameData.rounds[0].categories[${ci}].questions[${qi}].isVote = this.checked"> Голосование</label>
-            <label><input type="checkbox" ${q.isTest ? 'checked' : ''} onchange="gameData.rounds[0].categories[${ci}].questions[${qi}].isTest = this.checked"> Тест (варианты)</label>
+          <div style="display:flex; gap:10px; align-items:center; margin-bottom:10px;">
+            <div style="flex:1;">
+              <label>Ссылка на медиа (фото/видео/аудио):</label>
+              <input type="text" placeholder="https://..." value="${q.mediaUrl || ''}" onchange="gameData.rounds[${edRound}].categories[${ci}].questions[${qi}].mediaUrl = this.value">
+            </div>
+            <div>
+              <label>Или загрузить файл:</label><br>
+              <input type="file" accept="image/*,video/*,audio/*" onchange="uploadMedia(this, ${ci}, ${qi})">
+            </div>
           </div>
-          
-          <div style="margin-top:10px;">
-            <label>Варианты (для теста или голосования):</label>
-            <input type="text" value="${q.choices[0]}" placeholder="Вариант 1" onchange="gameData.rounds[0].categories[${ci}].questions[${qi}].choices[0] = this.value">
-            <input type="text" value="${q.choices[1]}" placeholder="Вариант 2" onchange="gameData.rounds[0].categories[${ci}].questions[${qi}].choices[1] = this.value">
-            <input type="text" value="${q.choices[2]}" placeholder="Вариант 3" onchange="gameData.rounds[0].categories[${ci}].questions[${qi}].choices[2] = this.value">
+
+          <div style="margin-top:10px; background:#f0f0f0; padding:10px; border-radius:8px;">
+            <label>Варианты (для Теста или Голосования):</label>
+            <input type="text" value="${q.choices[0] || ''}" placeholder="Вариант 1" onchange="gameData.rounds[${edRound}].categories[${ci}].questions[${qi}].choices[0] = this.value">
+            <input type="text" value="${q.choices[1] || ''}" placeholder="Вариант 2" onchange="gameData.rounds[${edRound}].categories[${ci}].questions[${qi}].choices[1] = this.value">
+            <input type="text" value="${q.choices[2] || ''}" placeholder="Вариант 3" onchange="gameData.rounds[${edRound}].categories[${ci}].questions[${qi}].choices[2] = this.value">
           </div>
-        </div>`;
+        `;
+        catDiv.appendChild(qDiv);
       });
-      html += `</div>`;
-      content.innerHTML += html;
+      content.appendChild(catDiv);
     });
+  }
+
+  function addCategory() {
+    const rData = gameData.rounds[edRound];
+    rData.categories.push({
+      name: "Новая категория",
+      questions: rData.prices.map(price => ({ price, question: "", answer: "", mediaUrl: "", isTest: false, isVote: false, isCasino: false, choices: ['', '', ''] }))
+    });
+    renderEditorMain();
+  }
+
+  function deleteCategory(ci) {
+    if(confirm('Удалить категорию?')) { gameData.rounds[edRound].categories.splice(ci, 1); renderEditorMain(); }
+  }
+
+  function uploadMedia(input, ci, qi) {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const base64 = e.target.result;
+      // Если файл больше 4 МБ, предупреждаем
+      if (file.size > 4 * 1024 * 1024) {
+        alert('Файл слишком большой (больше 4 МБ). База данных может не принять его.');
+      }
+      gameData.rounds[edRound].categories[ci].questions[qi].mediaUrl = base64;
+      alert('Файл загружен в редактор! Не забудьте нажать "Сохранить вопросы".');
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function openThemeEditor() {
+    document.getElementById('editorContent').innerHTML = `
+      <h2>🎨 Оформление</h2>
+      <p style="color:#666;">Настройка цветов и шрифтов появится в следующем обновлении. Пока можно менять вопросы.</p>
+    `;
   }
 
   async function saveGameData() {
     try {
-      await fetch('/api/game', {
+      const res = await fetch('/api/game', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ gameData })
       });
-      alert('Вопросы сохранены в базу данных!');
-      renderBoard();
-    } catch(e) { alert('Ошибка сохранения'); }
+      if (res.ok) {
+        alert('Вопросы успешно сохранены в облако!');
+      } else {
+        alert('Ошибка при сохранении (возможно, файл слишком большой).');
+      }
+    } catch(e) { alert('Ошибка сети'); }
   }
 
   // ============ ЗАПУСК ============
