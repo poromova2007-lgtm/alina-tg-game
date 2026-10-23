@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Игрок</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  body { font-family: sans-serif; background: #ffe4ec; padding: 20px; text-align: center; color: #4a2c17; }
+  input, select { padding: 15px; font-size: 1.2em; border-radius: 10px; border: 2px solid #6b4226; width: 90%; margin-bottom: 20px; }
+  button { padding: 20px; font-size: 1.5em; background: #6b4226; color: white; border: none; border-radius: 20px; font-weight: bold; width: 100%; margin-bottom: 10px; }
+  .vote-btn { background: #fff; color: #4a2c17; border: 3px solid #ff9ebb; text-align: left; }
+  #buzzBtn { height: 200px; background: #c04040; display: none; }
+  #answerForm, #voteForm { display: none; margin-top: 20px; }
+</style>
+</head>
+<body>
+  <div id="joinScreen">
+    <h1>🎂 Игра</h1>
+    <p>Как тебя зовут?</p>
+    <input type="text" id="nameInput" placeholder="Имя">
+    <p>Выбери команду:</p>
+    <select id="teamSelect">
+      <!-- Список заполнится автоматически -->
+      <option value="1">Ждем настройки команд...</option>
+    </select>
+    <button onclick="joinGame()">Войти</button>
+  </div>
+
+  <div id="gameScreen" style="display: none;">
+    <h2 id="myName"></h2>
+    <button id="buzzBtn" onclick="buzz()">Я ЗНАЮ!</button>
+    <div id="answerForm">
+      <input type="text" id="answerInput" placeholder="Твой ответ">
+      <button onclick="sendAnswer()">Отправить</button>
+    </div>
+    <div id="voteForm">
+      <h3 id="voteQuestion"></h3>
+      <div id="voteOptions"></div>
+    </div>
+  </div>
+
+  <script>
+    let ws, myId = null;
+
+    // Подключаемся сразу, чтобы узнать список команд
+    const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+    ws = new WebSocket(`${protocol}//${location.host}`);
+    
+    ws.onmessage = (e) => {
+      const msg = JSON.parse(e.data);
+      
+      if (msg.type === 'joined') {
+        myId = msg.id;
+        document.getElementById('joinScreen').style.display = 'none';
+        document.getElementById('gameScreen').style.display = 'block';
+        document.getElementById('myName').textContent = msg.name + ' (Команда ' + msg.teamId + ')';
+      }
+      
+      if (msg.type === 'state') {
+        // Обновляем список команд в выпадающем меню
+        if (msg.state.teams && msg.state.teams.length > 0) {
+          const select = document.getElementById('teamSelect');
+          if (select.options.length <= 1) { // если там только заглушка
+            select.innerHTML = '';
+            msg.state.teams.forEach(t => {
+              const opt = document.createElement('option');
+              opt.value = t.id;
+              opt.textContent = t.name;
+              select.appendChild(opt);
+            });
+          }
+        }
+
+        // Логика вопроса
+        const q = msg.state.currentQuestion;
+        if (q) {
+          if (q.isVote) {
+            document.getElementById('buzzBtn').style.display = 'none';
+            document.getElementById('answerForm').style.display = 'none';
+            document.getElementById('voteForm').style.display = 'block';
+            document.getElementById('voteQuestion').textContent = q.question;
+            
+            const optionsDiv = document.getElementById('voteOptions');
+            if (optionsDiv.innerHTML === '') { // если еще не отрисовали
+              optionsDiv.innerHTML = '';
+              q.choices.forEach((c, i) => {
+                const btn = document.createElement('button'); btn.className = 'vote-btn'; btn.textContent = c;
+                btn.onclick = () => { ws.send(JSON.stringify({ type: 'vote', choiceIndex: i })); optionsDiv.innerHTML = '<p>Спасибо за голос!</p>'; };
+                optionsDiv.appendChild(btn);
+              });
+            }
+          } else {
+            document.getElementById('voteForm').style.display = 'none';
+            document.getElementById('buzzBtn').style.display = 'block';
+            document.getElementById('answerForm').style.display = 'none';
+          }
+        } else {
+          document.getElementById('buzzBtn').style.display = 'none';
+          document.getElementById('answerForm').style.display = 'none';
+          document.getElementById('voteForm').style.display = 'none';
+        }
+      }
+    };
+
+    function joinGame() {
+      const name = document.getElementById('nameInput').value.trim();
+      const teamId = document.getElementById('teamSelect').value;
+      if (!name) return alert('Введи имя');
+      ws.send(JSON.stringify({ type: 'join', name, teamId }));
+    }
+
+    function buzz() { if (ws) ws.send(JSON.stringify({ type: 'buzz' })); }
+    function sendAnswer() {
+      const text = document.getElementById('answerInput').value.trim();
+      if (ws) ws.send(JSON.stringify({ type: 'answer', text }));
+    }
+  </script>
+</body>
+</html>
