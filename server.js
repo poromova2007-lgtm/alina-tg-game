@@ -10,18 +10,27 @@ const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 const PORT = process.env.PORT || 3000;
 
-// Подключение к базе
+// Подключение к базе данных Neon (ссылка берется из настроек Render)
 const pool = new Pool({ 
   connectionString: process.env.DATABASE_URL, 
   ssl: { rejectUnauthorized: false } 
 });
 pool.query(`CREATE TABLE IF NOT EXISTS game_data (id SERIAL PRIMARY KEY, data JSONB)`).catch(console.error);
 
-// Загрузка медиа
+// Настройка загрузки медиа-файлов
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json({ limit: '15mb' }));
 
+// ============ ЯВНЫЕ МАРШРУТЫ ДЛЯ ФАЙЛОВ (ЧТОБЫ TELEGRAM ИХ НАШЕЛ) ============
+app.get('/', (req, res) => { 
+  res.sendFile(path.join(__dirname, 'public', 'index.html')); 
+});
+app.get('/phone', (req, res) => { 
+  res.sendFile(path.join(__dirname, 'public', 'phone.html')); 
+});
+
+// ============ API ДЛЯ ЗАГРУЗКИ И СОХРАНЕНИЯ ============
 app.post('/api/upload', upload.single('file'), (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'Нет файла' });
   const base64 = req.file.buffer.toString('base64');
@@ -48,9 +57,9 @@ app.post('/api/game', async (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-// ============ ИГРОВОЕ СОСТОЯНИЕ ============
+// ============ СОСТОЯНИЕ ИГРЫ ============
 let players = [];
-let teams = []; // Список команд, который задаст ведущая
+let teams = []; 
 let currentQuestion = null;
 let buzzQueue = [], answeredWrong = [], locked = false;
 let nextPlayerId = 1;
@@ -63,7 +72,7 @@ wss.on('connection', (ws) => {
   ws.on('message', (raw) => {
     let msg; try { msg = JSON.parse(raw); } catch(e) { return; }
 
-    // Игрок заходит с телефона
+    // Игрок заходит
     if (msg.type === 'join') {
       const name = String(msg.name || '').trim().slice(0, 20) || 'Игрок';
       const teamId = parseInt(msg.teamId) || 1;
@@ -74,7 +83,7 @@ wss.on('connection', (ws) => {
       broadcastState(); return;
     }
 
-    // Обычное нажатие "Я ЗНАЮ"
+    // Нажатие "Я ЗНАЮ"
     if (msg.type === 'buzz') {
       if (!ws.playerId || locked || !currentQuestion || currentQuestion.isVote) return;
       if (buzzQueue.some(b => b.playerId === ws.playerId) || answeredWrong.includes(ws.playerId)) return;
@@ -112,7 +121,6 @@ wss.on('connection', (ws) => {
         if(voteTimer) clearInterval(voteTimer);
         voteTimer = setInterval(() => {
           timeLeft--;
-          // Рассылаем всем таймер (обновление раз в секунду)
           wss.clients.forEach(c => { if (c.readyState === WebSocket.OPEN) c.send(JSON.stringify({ type: 'tick', timeLeft })); });
 
           if (timeLeft <= 0) {
@@ -126,7 +134,6 @@ wss.on('connection', (ws) => {
             currentQuestion.winningChoice = winningChoice;
             currentQuestion.isVotingFinished = true;
             
-            // Начисляем очки командам за правильный выбор
             players.forEach(p => {
               if (votes[p.id] === winningChoice) {
                 const team = teams.find(t => t.id === p.teamId);
@@ -142,13 +149,14 @@ wss.on('connection', (ws) => {
       return;
     }
 
+    // Ведущий закрывает вопрос
     if (msg.type === 'closeQuestion') {
       currentQuestion = null; buzzQueue = []; answeredWrong = []; locked = false; votes = {};
       if (voteTimer) clearInterval(voteTimer);
       broadcastState(); return;
     }
 
-    // Ведущий нажимает "Верно" (начисляет очки команде)
+    // Ведущий начисляет баллы
     if (msg.type === 'correct') {
       const player = players.find(x => x.id === msg.playerId);
       if (player) {
@@ -158,13 +166,14 @@ wss.on('connection', (ws) => {
       broadcastState(); return;
     }
 
+    // Ведущий фиксирует неверный ответ
     if (msg.type === 'wrong') {
       if (!answeredWrong.includes(msg.playerId)) answeredWrong.push(msg.playerId);
       buzzQueue = buzzQueue.filter(b => b.playerId !== msg.playerId);
       broadcastState(); return;
     }
 
-    // Ведущий задает количество и названия команд
+    // Ведущий задает команды
     if (msg.type === 'updateTeams') {
       teams = msg.teams;
       broadcastState(); return;
