@@ -8,18 +8,11 @@
   :root { --bg1: #ffe4ec; --bg2: #ffc2d4; --brown: #6b4226; --pink-deep: #ff9ebb; --text: #4a2c17; }
   body { font-family: sans-serif; background: linear-gradient(135deg, var(--bg1), var(--bg2)); min-height: 100vh; color: var(--text); padding: 20px; margin: 0; }
   h1 { text-align: center; color: var(--brown); font-size: 3em; text-shadow: 3px 3px 0 var(--pink-deep); margin: 10px 0; }
-  
   .btn { padding: 10px 20px; border-radius: 20px; border: none; background: var(--brown); color: white; font-weight: bold; cursor: pointer; font-size: 1em; margin: 5px; }
   .btn.pink { background: var(--pink-deep); color: var(--text); }
   .btn.green { background: #7ec97e; color: white; }
   .btn.red { background: #c04040; color: white; }
-  .btn.blue { background: #5c9ce6; color: white; }
-  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-  
-  /* КНОПКА РЕДАКТОРА */
-  #editorToggle { position: fixed; top: 20px; right: 20px; z-index: 250; padding: 12px 24px; background: var(--brown); color: #fff5f0; border: none; border-radius: 30px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
-
-  /* ИГРА */
+  #editorToggle { position: fixed; top: 20px; right: 20px; z-index: 250; padding: 12px 24px; background: var(--brown); color: #fff5f0; border: none; border-radius: 30px; cursor: pointer; font-weight: bold; }
   #gameScreen { max-width: 1400px; margin: 0 auto; }
   .game-layout { display: grid; grid-template-columns: 1fr 320px; gap: 20px; align-items: start; }
   @media (max-width: 1000px) { .game-layout { grid-template-columns: 1fr; } }
@@ -29,29 +22,22 @@
   .cell:hover { transform: scale(1.02); }
   .cell.casino-cell { background: linear-gradient(145deg, #ffb347, var(--pink-deep)); color: #fff; }
   .cell.casino-cell::before { content: '🎰'; position: absolute; top: 3px; left: 6px; font-size: .5em; }
-
   #playersPanel { background: #fff5f0; border-radius: 20px; padding: 20px; border: 3px solid var(--pink-deep); }
   #playersPanel h3 { color: var(--brown); text-align: center; margin-bottom: 15px; }
   .player-card { background: linear-gradient(145deg, var(--bg1), var(--bg2)); border-radius: 12px; padding: 10px 15px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
   .player-card .pscore { background: var(--brown); color: #fff5f0; padding: 4px 12px; border-radius: 15px; font-weight: bold; }
-
-  /* МОДАЛКИ */
   .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 100; align-items: center; justify-content: center; padding: 20px; }
   .modal.show { display: flex; }
   .modal-content { background: #fff5f0; padding: 30px; border-radius: 20px; max-width: 800px; width: 100%; max-height: 90vh; overflow-y: auto; border: 4px solid var(--pink-deep); }
-
-  /* РЕДАКТОР */
   #editor { display: none; position: fixed; inset: 0; background: rgba(74,44,23,.95); z-index: 300; padding: 20px; }
   #editor.show { display: flex; gap: 20px; }
   .editor-sidebar { width: 300px; flex-shrink: 0; background: #fff5f0; border-radius: 24px; padding: 20px; display: flex; flex-direction: column; border: 3px solid var(--brown); overflow-y: auto;}
   .editor-sidebar h2 { color: var(--brown); text-align: center; margin-bottom: 15px; }
   .editor-sidebar .btn { width: 100%; margin: 5px 0; }
   .editor-main { flex-grow: 1; background: #fff5f0; border-radius: 24px; padding: 20px; overflow-y: auto; border: 3px solid var(--pink-deep); }
-  
   .editor-category { background: #fff; border-radius: 14px; padding: 12px; border: 2px solid var(--pink-deep); margin-bottom: 15px;}
   .question-block { background: #fdfdfd; padding: 12px; border-radius: 8px; margin-bottom: 12px; border: 1px solid #ffb347; }
   textarea, input[type="text"], input[type="number"], select { width: 100%; padding: 8px; border: 1px solid #a4785c; border-radius: 6px; margin-bottom: 8px; font-family: inherit; box-sizing: border-box; }
-
   .buzz-card { display: flex; align-items: center; justify-content: space-between; background: #ffb347; color: #fff; padding: 12px 20px; border-radius: 14px; font-weight: bold; margin-bottom: 10px; }
   .buzz-card.first { background: #c04040; font-size: 1.15em; }
   .vote-option { background: #eee; padding: 15px; margin: 10px 0; border-radius: 10px; font-size: 1.2em; position: relative; overflow: hidden; }
@@ -78,7 +64,6 @@
   <div class="modal-content" id="questionModalContent"></div>
 </div>
 
-<!-- РЕДАКТОР -->
 <div id="editor">
   <div class="editor-sidebar">
     <h2>✏️ Редактор</h2>
@@ -112,7 +97,6 @@
       const data = await res.json();
       if (data && data.rounds && data.rounds.length > 0) gameData = data;
     } catch(e) {}
-    
     if (!gameData.rounds || gameData.rounds.length === 0) {
       gameData.rounds = [{ name: "Раунд 1", prices: [100, 200, 300, 400, 500], categories: [] }];
       for (let c = 0; c < 5; c++) {
@@ -122,8 +106,7 @@
         });
       }
     }
-    renderBoard();
-    applyTheme();
+    renderBoard(); applyTheme();
   }
 
   function applyTheme() {
@@ -170,9 +153,14 @@
     const modal = document.getElementById('questionModal'); const content = document.getElementById('questionModalContent');
     let html = `<h2 style="color:var(--brown);">${q.question}</h2>`;
     if (q.mediaUrl) {
-      if (q.mediaUrl.match(/\.(mp4|webm|ogg)/)) html += `<video src="${q.mediaUrl}" controls style="max-width:100%; max-height:300px; border-radius:10px; margin:10px 0;"></video>`;
-      else if (q.mediaUrl.match(/\.(mp3|wav|m4a)/)) html += `<audio src="${q.mediaUrl}" controls style="width:100%; margin:10px 0;"></audio>`;
-      else html += `<img src="${q.mediaUrl}" style="max-width:100%; max-height:300px; border-radius:10px; margin:10px 0;">`;
+      // Проверяем, видео это или картинка
+      if (q.mediaUrl.match(/\.(mp4|webm|ogg)/i) || q.mediaUrl.startsWith('data:video')) {
+        html += `<video src="${q.mediaUrl}" controls autoplay style="max-width:100%; max-height:300px; border-radius:10px; margin:10px 0;"></video>`;
+      } else if (q.mediaUrl.match(/\.(mp3|wav|m4a)/i) || q.mediaUrl.startsWith('data:audio')) {
+        html += `<audio src="${q.mediaUrl}" controls style="width:100%; margin:10px 0;"></audio>`;
+      } else {
+        html += `<img src="${q.mediaUrl}" style="max-width:100%; max-height:300px; border-radius:10px; margin:10px 0;">`;
+      }
     }
     
     if (q.isVote) {
@@ -233,21 +221,15 @@
   function scoreCorrect() { const first = state.buzzQueue[0]; if (!first) return; ws.send(JSON.stringify({ type: 'correct', playerId: first.playerId, delta: state.currentQuestion.price })); revealAnswer(); }
   function scoreWrong() { const first = state.buzzQueue[0]; if (!first) return; ws.send(JSON.stringify({ type: 'wrong', playerId: first.playerId })); }
 
-  // КАЗИНО В ИГРЕ
+  // КАЗИНО
   function runCasino(type, basePrice) {
     const area = document.getElementById('casinoAnimArea');
     const extra = +document.getElementById('extraPointsInput').value || 0;
     const totalWin = basePrice + extra;
     area.innerHTML = '<h3 style="color:var(--brown);">Крутим...</h3>';
-    
     setTimeout(() => {
-      if (type === 'slots') {
-        const isWin = Math.random() > 0.5;
-        area.innerHTML = `<h2 style="color:${isWin ? '#7ec97e' : '#c04040'};">${isWin ? '🎉 Джекпот! +' + totalWin : '💥 Не повезло'}</h2>`;
-      } else {
-        const isWin = Math.random() > 0.5;
-        area.innerHTML = `<h2 style="color:${isWin ? '#7ec97e' : '#c04040'};">${isWin ? '🎡 Колесо дало +' + totalWin : '💥 Колесо дало 0'}</h2>`;
-      }
+      const isWin = Math.random() > 0.5;
+      area.innerHTML = `<h2 style="color:${isWin ? '#7ec97e' : '#c04040'};">${isWin ? '🎉 Выигрыш! +' + totalWin : '💥 Не повезло'}</h2>`;
     }, 1500);
   }
 
@@ -283,8 +265,8 @@
           <label>Вопрос:</label><textarea rows="2" onchange="gameData.rounds[${edRound}].categories[${ci}].questions[${qi}].question = this.value">${q.question}</textarea>
           <label>Ответ:</label><textarea rows="2" onchange="gameData.rounds[${edRound}].categories[${ci}].questions[${qi}].answer = this.value">${q.answer}</textarea>
           <div style="display:flex; gap:10px; align-items:center; margin-bottom:10px;">
-            <div style="flex:1;"><label>Ссылка на медиа:</label><input type="text" value="${q.mediaUrl || ''}" onchange="gameData.rounds[${edRound}].categories[${ci}].questions[${qi}].mediaUrl = this.value"></div>
-            <div><label>Или файл:</label><br><input type="file" accept="image/*,video/*,audio/*" onchange="uploadMedia(this, ${ci}, ${qi})"></div>
+            <div style="flex:1;"><label>Ссылка:</label><input type="text" value="${q.mediaUrl || ''}" onchange="gameData.rounds[${edRound}].categories[${ci}].questions[${qi}].mediaUrl = this.value"></div>
+            <div><label>Файл:</label><br><input type="file" accept="image/*,video/*,audio/*" onchange="uploadMedia(this, ${ci}, ${qi})"></div>
           </div>
           <div style="margin-top:10px; background:#f0f0f0; padding:10px; border-radius:8px;">
             <label>Варианты (Тест / Голосование):</label>
@@ -335,7 +317,22 @@
   }
 
   function deleteCategory(ci) { if(confirm('Удалить категорию?')) { gameData.rounds[edRound].categories.splice(ci, 1); renderEditorRounds(); } }
-  function uploadMedia(input, ci, qi) { const file = input.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(e) { gameData.rounds[edRound].categories[ci].questions[qi].mediaUrl = e.target.result; alert('Файл загружен!'); }; reader.readAsDataURL(file); }
+
+  async function uploadMedia(input, ci, qi) {
+    const file = input.files[0]; if (!file) return;
+    const formData = new FormData();
+    formData.append('file', file);
+    try {
+      const res = await fetch('/api/upload', { method: 'POST', body: formData });
+      const data = await res.json();
+      if (data.ok) {
+        gameData.rounds[edRound].categories[ci].questions[qi].mediaUrl = data.url;
+        alert('Файл загружен на сервер!');
+      } else {
+        alert('Ошибка загрузки: ' + data.error);
+      }
+    } catch(e) { alert('Ошибка сети'); }
+  }
 
   async function saveGameData() {
     try {
