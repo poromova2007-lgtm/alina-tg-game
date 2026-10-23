@@ -16,7 +16,6 @@
   
   #gameScreen { display: none; width: 100%; max-width: 500px; flex-direction: column; align-items: center; gap: 20px; }
   .playerName { background: #6b4226; color: #fff5f0; padding: 12px 25px; border-radius: 30px; font-weight: bold; font-size: 1.2em; }
-  .scoreBadge { background: #ffb347; color: #fff; padding: 10px 25px; border-radius: 30px; font-size: 1.3em; font-weight: bold; }
   .status { font-size: 1em; color: #6b4226; font-style: italic; padding: 15px; background: rgba(255,255,255,.6); border-radius: 14px; width: 100%; }
   
   #buzzBtn { width: 100%; height: 220px; border-radius: 30px; font-size: 2.2em; background: linear-gradient(145deg, #c04040, #8b2020); box-shadow: 0 12px 30px rgba(192,64,64,.5); display: none; }
@@ -66,7 +65,6 @@
 <script>
   let ws = null;
   let myId = null;
-  let myName = '';
   let currentQuestion = null;
   let hasBuzzed = false;
   let hasVoted = false;
@@ -87,29 +85,22 @@
   const voteQuestion = document.getElementById('voteQuestion');
   const voteOptions = document.getElementById('voteOptions');
 
-  // Подключение к серверу
   function connectWS() {
     const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
     ws = new WebSocket(`${protocol}//${location.host}`);
-    
     ws.onopen = () => console.log('✅ Подключено');
-    ws.onmessage = (e) => {
-      const msg = JSON.parse(e.data);
-      handleMessage(msg);
-    };
+    ws.onmessage = (e) => handleMessage(JSON.parse(e.data));
     ws.onclose = () => setTimeout(connectWS, 2000);
   }
 
   function handleMessage(msg) {
     if (msg.type === 'joined') {
       myId = msg.id;
-      myName = msg.name;
-      myNameEl.textContent = myName;
+      myNameEl.textContent = msg.name;
       joinScreen.style.display = 'none';
       gameScreen.style.display = 'flex';
       return;
     }
-    
     if (msg.type === 'buzzed') {
       hasBuzzed = true;
       buzzBtn.style.display = 'none';
@@ -118,7 +109,6 @@
       answerInput.focus();
       return;
     }
-    
     if (msg.type === 'state') {
       updateState(msg.state);
       return;
@@ -126,90 +116,58 @@
   }
 
   function updateState(state) {
-    // Обновляем команды при входе (если ведущая включила командный режим)
     if (state.teams && state.teams.length > 0 && teamSelect.options.length === 0) {
       teamSelectBox.style.display = 'block';
       state.teams.forEach(t => {
-        const opt = document.createElement('option');
-        opt.value = t.id;
-        opt.textContent = t.name;
-        teamSelect.appendChild(opt);
+        const opt = document.createElement('option'); opt.value = t.id; opt.textContent = t.name; teamSelect.appendChild(opt);
       });
     }
 
     const q = state.currentQuestion;
-
-    // Если вопрос закрыт или не открыт
     if (!q) {
-      currentQuestion = null;
-      hasBuzzed = false;
-      hasVoted = false;
-      buzzBtn.style.display = 'none';
-      answerForm.style.display = 'none';
-      voteForm.style.display = 'none';
+      currentQuestion = null; hasBuzzed = false; hasVoted = false;
+      buzzBtn.style.display = 'none'; answerForm.style.display = 'none'; voteForm.style.display = 'none';
       statusText.textContent = 'Ждём вопрос...';
       return;
     }
 
-    // Если открылся НОВЫЙ вопрос
     if (!currentQuestion || currentQuestion.row !== q.row || currentQuestion.catIdx !== q.catIdx) {
-      currentQuestion = q;
-      hasBuzzed = false;
-      hasVoted = false;
-      answerForm.style.display = 'none';
-      answerInput.value = '';
+      currentQuestion = q; hasBuzzed = false; hasVoted = false;
+      answerForm.style.display = 'none'; answerInput.value = '';
       
       if (q.isVote) {
-        // Вопрос-голосование
-        buzzBtn.style.display = 'none';
-        voteForm.style.display = 'block';
-        voteQuestion.textContent = q.question;
-        voteOptions.innerHTML = '';
+        buzzBtn.style.display = 'none'; voteForm.style.display = 'block';
+        voteQuestion.textContent = q.question; voteOptions.innerHTML = '';
         q.choices.forEach((choice, idx) => {
           if (!choice.trim()) return;
-          const btn = document.createElement('button');
-          btn.className = 'vote-btn';
-          btn.textContent = choice;
+          const btn = document.createElement('button'); btn.className = 'vote-btn'; btn.textContent = choice;
           btn.onclick = () => {
             if (hasVoted) return;
             ws.send(JSON.stringify({ type: 'vote', choiceIndex: idx }));
             voteOptions.querySelectorAll('.vote-btn').forEach(b => b.classList.remove('selected'));
-            btn.classList.add('selected');
-            hasVoted = true;
-            statusText.textContent = 'Ты проголосовал!';
+            btn.classList.add('selected'); hasVoted = true; statusText.textContent = 'Ты проголосовал!';
           };
           voteOptions.appendChild(btn);
         });
         statusText.textContent = 'Голосуй за вариант!';
       } else {
-        // Обычный вопрос
-        voteForm.style.display = 'none';
-        buzzBtn.style.display = 'block';
-        buzzBtn.disabled = false;
+        voteForm.style.display = 'none'; buzzBtn.style.display = 'block'; buzzBtn.disabled = false;
         statusText.textContent = '🎯 Жми «Я ЗНАЮ!»';
         if (navigator.vibrate) navigator.vibrate(100);
       }
     }
 
-    // Обновление статуса "Я знаю"
     if (!q.isVote) {
       const iAmWrong = state.answeredWrong.includes(myId);
       const someoneBuzzed = state.buzzQueue.length > 0;
-      
       if (hasBuzzed) {
         buzzBtn.style.display = 'none';
       } else if (iAmWrong) {
-        buzzBtn.style.display = 'block';
-        buzzBtn.disabled = true;
-        statusText.textContent = '❌ Ты ответил неверно на этот вопрос';
+        buzzBtn.style.display = 'block'; buzzBtn.disabled = true; statusText.textContent = '❌ Ты ответил неверно';
       } else if (someoneBuzzed) {
-        buzzBtn.style.display = 'block';
-        buzzBtn.disabled = true;
-        statusText.textContent = '🔒 Кто-то отвечает первым...';
+        buzzBtn.style.display = 'block'; buzzBtn.disabled = true; statusText.textContent = '🔒 Кто-то отвечает...';
       } else {
-        buzzBtn.style.display = 'block';
-        buzzBtn.disabled = false;
-        statusText.textContent = '🎯 Жми «Я ЗНАЮ!»';
+        buzzBtn.style.display = 'block'; buzzBtn.disabled = false; statusText.textContent = '🎯 Жми «Я ЗНАЮ!»';
       }
     }
   }
@@ -218,32 +176,12 @@
     const name = nameInput.value.trim();
     if (!name) return alert('Введи имя');
     const teamId = teamSelectBox.style.display === 'block' ? teamSelect.value : 0;
-    
-    if (ws && ws.readyState === WebSocket.OPEN) {
-      ws.send(JSON.stringify({ type: 'join', name, teamId }));
-    }
+    if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'join', name, teamId }));
   });
 
   nameInput.addEventListener('keydown', e => { if (e.key === 'Enter') joinBtn.click(); });
-
-  buzzBtn.addEventListener('click', () => {
-    if (buzzBtn.disabled || hasBuzzed) return;
-    if (ws && ws.readyState === WebSocket.OPEN) {
-      ws.send(JSON.stringify({ type: 'buzz' }));
-      if (navigator.vibrate) navigator.vibrate(200);
-    }
-  });
-
-  sendAnswerBtn.addEventListener('click', () => {
-    const text = answerInput.value.trim();
-    if (!text) return alert('Введи ответ');
-    if (ws && ws.readyState === WebSocket.OPEN) {
-      ws.send(JSON.stringify({ type: 'answer', text }));
-      answerForm.style.display = 'none';
-      statusText.textContent = 'Ответ отправлен, ждём ведущего';
-    }
-  });
-
+  buzzBtn.addEventListener('click', () => { if (buzzBtn.disabled || hasBuzzed) return; if (ws) ws.send(JSON.stringify({ type: 'buzz' })); });
+  sendAnswerBtn.addEventListener('click', () => { const text = answerInput.value.trim(); if (!text) return; if (ws) { ws.send(JSON.stringify({ type: 'answer', text })); answerForm.style.display = 'none'; statusText.textContent = 'Ответ отправлен!'; } });
   answerInput.addEventListener('keydown', e => { if (e.key === 'Enter') sendAnswerBtn.click(); });
 
   connectWS();
