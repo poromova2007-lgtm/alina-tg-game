@@ -10,16 +10,14 @@ const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 const PORT = process.env.PORT || 3000;
 
-// Подключение к базе данных
 const pool = new Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
 pool.query(`CREATE TABLE IF NOT EXISTS game_data (id SERIAL PRIMARY KEY, data JSONB)`).catch(console.error);
 
-// Загрузка медиа
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
+// Увеличиваем лимит загрузки файлов
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } });
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.json({ limit: '15mb' }));
+app.use(express.json({ limit: '50mb' }));
 
-// Маршруты
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 app.get('/phone', (req, res) => res.sendFile(path.join(__dirname, 'public', 'phone.html')));
 
@@ -106,8 +104,7 @@ wss.on('connection', (ws) => {
           broadcastState();
           if (gameState.timer <= 0) {
             clearInterval(voteTimer);
-            let counts = {};
-            Object.values(gameState.votes).forEach(v => counts[v] = (counts[v] || 0) + 1);
+            let counts = {}; Object.values(gameState.votes).forEach(v => counts[v] = (counts[v] || 0) + 1);
             let maxVotes = 0, winningChoice = -1;
             for (let key in counts) { if (counts[key] > maxVotes) { maxVotes = counts[key]; winningChoice = parseInt(key); } }
             gameState.currentQuestion.winningChoice = winningChoice;
@@ -147,18 +144,11 @@ wss.on('connection', (ws) => {
       broadcastState(); return;
     }
 
-    if (msg.type === 'updateTeams') {
-      gameState.teams = msg.teams; broadcastState(); return;
-    }
-
-    if (msg.type === 'startGame') {
-      gameState.teams = msg.teams || []; gameState.players = []; broadcastState(); return;
-    }
+    if (msg.type === 'updateTeams') { gameState.teams = msg.teams; broadcastState(); return; }
+    if (msg.type === 'startGame') { gameState.teams = msg.teams || []; gameState.players = []; broadcastState(); return; }
   });
 
-  ws.on('close', () => {
-    if (ws.playerId) { const p = gameState.players.find(x => x.id === ws.playerId); if (p) p.connected = false; broadcastState(); }
-  });
+  ws.on('close', () => { if (ws.playerId) { const p = gameState.players.find(x => x.id === ws.playerId); if (p) p.connected = false; broadcastState(); } });
 });
 
 function broadcastState() {
