@@ -13,10 +13,9 @@ const PORT = process.env.PORT || 3000;
 const pool = new Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
 pool.query(`CREATE TABLE IF NOT EXISTS game_data (id SERIAL PRIMARY KEY, data JSONB)`).catch(console.error);
 
-// Увеличиваем лимит загрузки файлов
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } });
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.json({ limit: '50mb' }));
+app.use(express.json({ limit: '15mb' }));
 
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 app.get('/phone', (req, res) => res.sendFile(path.join(__dirname, 'public', 'phone.html')));
@@ -47,7 +46,6 @@ app.post('/api/game', async (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-// ============ СОСТОЯНИЕ ИГРЫ ============
 let gameState = { players: [], teams: [], currentQuestion: null, buzzQueue: [], answeredWrong: [], locked: false, votes: {}, timer: 0 };
 let nextPlayerId = 1;
 let voteTimer = null;
@@ -95,7 +93,6 @@ wss.on('connection', (ws) => {
     if (msg.type === 'openQuestion') {
       gameState.currentQuestion = msg.question;
       gameState.buzzQueue = []; gameState.answeredWrong = []; gameState.locked = false; gameState.votes = {};
-      
       if (gameState.currentQuestion.isVote) {
         gameState.timer = 20;
         if (voteTimer) clearInterval(voteTimer);
@@ -109,7 +106,6 @@ wss.on('connection', (ws) => {
             for (let key in counts) { if (counts[key] > maxVotes) { maxVotes = counts[key]; winningChoice = parseInt(key); } }
             gameState.currentQuestion.winningChoice = winningChoice;
             gameState.currentQuestion.isVotingFinished = true;
-            
             gameState.players.forEach(p => {
               if (gameState.votes[p.id] === winningChoice) {
                 if (p.teamId === 0) p.score += (gameState.currentQuestion.price || 100);
