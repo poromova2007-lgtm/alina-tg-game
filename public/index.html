@@ -16,22 +16,17 @@
   .btn.blue { background: #5c9ce6; color: white; }
   .btn:disabled { opacity: 0.5; cursor: not-allowed; }
   
-  /* КНОПКА РЕДАКТОРА СПРАВА СВЕРХУ */
+  /* КНОПКА РЕДАКТОРА */
   #editorToggle { position: fixed; top: 20px; right: 20px; z-index: 250; padding: 12px 24px; background: var(--brown); color: #fff5f0; border: none; border-radius: 30px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
 
-  /* НАСТРОЙКА */
-  #setupScreen { background: #fff5f0; max-width: 500px; margin: 50px auto; padding: 30px; border-radius: 20px; border: 3px solid var(--pink-deep); text-align: center; }
-  #setupScreen select, #setupScreen input { width: 100%; padding: 10px; margin: 10px 0; border-radius: 10px; border: 2px solid var(--pink-deep); box-sizing: border-box; }
-
   /* ИГРА */
-  #gameScreen { display: none; max-width: 1400px; margin: 0 auto; }
+  #gameScreen { max-width: 1400px; margin: 0 auto; }
   .game-layout { display: grid; grid-template-columns: 1fr 320px; gap: 20px; align-items: start; }
   @media (max-width: 1000px) { .game-layout { grid-template-columns: 1fr; } }
   #board { display: grid; gap: 10px; background: rgba(255,255,255,.4); padding: 15px; border-radius: 20px; }
   .category-header { background: var(--brown); color: white; padding: 15px; text-align: center; border-radius: 10px; font-weight: bold; }
   .cell { background: var(--pink-deep); color: var(--text); padding: 25px; text-align: center; border-radius: 10px; font-size: 1.5em; font-weight: bold; cursor: pointer; border: 2px solid white; position: relative; }
   .cell:hover { transform: scale(1.02); }
-  .cell.used { opacity: 0.3; pointer-events: none; }
   .cell.casino-cell { background: linear-gradient(145deg, #ffb347, var(--pink-deep)); color: #fff; }
   .cell.casino-cell::before { content: '🎰'; position: absolute; top: 3px; left: 6px; font-size: .5em; }
 
@@ -52,46 +47,22 @@
   .editor-sidebar h2 { color: var(--brown); text-align: center; margin-bottom: 15px; }
   .editor-sidebar .btn { width: 100%; margin: 5px 0; }
   .editor-main { flex-grow: 1; background: #fff5f0; border-radius: 24px; padding: 20px; overflow-y: auto; border: 3px solid var(--pink-deep); }
-  .editor-tabs { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
-  .editor-tab { padding: 8px 20px; background: var(--bg1); border: 2px solid var(--pink-deep); border-radius: 20px; cursor: pointer; font-weight: bold; color: var(--brown); }
-  .editor-tab.active { background: var(--brown); color: #fff5f0; }
   
   .editor-category { background: #fff; border-radius: 14px; padding: 12px; border: 2px solid var(--pink-deep); margin-bottom: 15px;}
   .question-block { background: #fdfdfd; padding: 12px; border-radius: 8px; margin-bottom: 12px; border: 1px solid #ffb347; }
   textarea, input[type="text"], input[type="number"], select { width: 100%; padding: 8px; border: 1px solid #a4785c; border-radius: 6px; margin-bottom: 8px; font-family: inherit; box-sizing: border-box; }
 
-  /* КАЗИНО */
-  .casino-area { width: 100%; max-width: 700px; margin: 0 auto; padding: 20px; background: rgba(255,255,255,0.6); border-radius: 20px; border: 2px dashed var(--brown); }
-  .wheel-container { position: relative; display: inline-block; margin: 10px auto; }
-  .wheel-pointer { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); font-size: 2.5em; color: #c04040; z-index: 2; }
-  #wheelCanvas { max-width: 100%; height: auto; }
-  
+  .buzz-card { display: flex; align-items: center; justify-content: space-between; background: #ffb347; color: #fff; padding: 12px 20px; border-radius: 14px; font-weight: bold; margin-bottom: 10px; }
+  .buzz-card.first { background: #c04040; font-size: 1.15em; }
   .vote-option { background: #eee; padding: 15px; margin: 10px 0; border-radius: 10px; font-size: 1.2em; position: relative; overflow: hidden; }
   .vote-bar { position: absolute; left: 0; top: 0; bottom: 0; background: #7ec97e; z-index: 1; transition: width 0.5s; }
   .vote-text { position: relative; z-index: 2; font-weight: bold; }
-  .buzz-card { display: flex; align-items: center; justify-content: space-between; background: #ffb347; color: #fff; padding: 12px 20px; border-radius: 14px; font-weight: bold; margin-bottom: 10px; }
-  .buzz-card.first { background: #c04040; font-size: 1.15em; }
 </style>
 </head>
 <body>
 
 <button id="editorToggle" onclick="openEditor()">⚙️ Редактор</button>
 <h1 id="mainTitle">🎂 Happy Birthday 🎂</h1>
-
-<div id="setupScreen">
-  <h2>Настройка игры</h2>
-  <label>Формат игры:</label>
-  <select id="gameFormat" onchange="toggleFormat()">
-    <option value="solo">Каждый сам за себя</option>
-    <option value="teams">Игра по командам</option>
-  </select>
-  <div id="teamsSetup" style="display:none;">
-    <label>Количество команд:</label>
-    <input type="number" id="teamCount" value="2" min="2" max="10" onchange="renderTeamInputs()">
-    <div id="teamInputs"></div>
-  </div>
-  <button class="btn green" style="width: 100%; margin-top: 20px;" onclick="startGame()">🚀 Начать игру</button>
-</div>
 
 <div id="gameScreen">
   <div class="game-layout">
@@ -107,39 +78,25 @@
   <div class="modal-content" id="questionModalContent"></div>
 </div>
 
-<!-- РЕДАКТОР (как раньше) -->
+<!-- РЕДАКТОР -->
 <div id="editor">
   <div class="editor-sidebar">
     <h2>✏️ Редактор</h2>
     <button class="btn green" onclick="saveGameData()">💾 Сохранить</button>
     <button class="btn red" onclick="closeEditor()">✖ Закрыть</button>
     <hr style="border:1px dashed #ff9ebb; margin: 15px 0; width: 100%;">
-    <button class="btn blue" onclick="switchTab('rounds')">📚 Раунды</button>
-    <button class="btn" onclick="switchTab('theme')">🎨 Оформление</button>
-    <button class="btn" onclick="switchTab('preview')">👁 Предпросмотр</button>
+    <button class="btn" onclick="renderEditorRounds()">📚 Раунды</button>
+    <button class="btn" onclick="renderThemeEditor()">🎨 Оформление</button>
   </div>
   <div class="editor-main" id="editorContent"></div>
-</div>
-
-<div class="modal" id="previewModal">
-  <div class="modal-content" style="max-width: 900px;">
-    <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
-      <h2 style="color:var(--brown); margin:0;">👁 Предпросмотр</h2>
-      <button class="btn red" onclick="document.getElementById('previewModal').classList.remove('show')">Закрыть</button>
-    </div>
-    <div id="previewContent"></div>
-  </div>
 </div>
 
 <script>
   let ws;
   let gameData = { settings: {}, rounds: [] };
   let state = { players: [], teams: [], currentQuestion: null, votes: {}, timer: 0 };
-  let isTeamMode = false;
   let edRound = 0;
-  let currentTab = 'rounds';
 
-  // ============ ПОДКЛЮЧЕНИЕ ============
   function connect() {
     const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
     ws = new WebSocket(`${protocol}//${location.host}`);
@@ -149,35 +106,11 @@
     };
   }
 
-  // ============ НАСТРОЙКА ============
-  function toggleFormat() {
-    isTeamMode = (document.getElementById('gameFormat').value === 'teams');
-    document.getElementById('teamsSetup').style.display = isTeamMode ? 'block' : 'none';
-    if (isTeamMode) renderTeamInputs();
-  }
-  function renderTeamInputs() {
-    const count = parseInt(document.getElementById('teamCount').value) || 2;
-    const container = document.getElementById('teamInputs'); container.innerHTML = '';
-    for (let i = 1; i <= count; i++) { container.innerHTML += `<input type="text" id="teamName_${i}" value="Команда ${i}">`; }
-  }
-  function startGame() {
-    let teams = [];
-    if (isTeamMode) {
-      const count = parseInt(document.getElementById('teamCount').value) || 2;
-      for (let i = 1; i <= count; i++) { teams.push({ id: i, name: document.getElementById(`teamName_${i}`).value, score: 0 }); }
-    }
-    ws.send(JSON.stringify({ type: 'startGame', teams }));
-    document.getElementById('setupScreen').style.display = 'none';
-    document.getElementById('gameScreen').style.display = 'block';
-    loadGameData();
-  }
-
-  // ============ ЗАГРУЗКА ИГРЫ ============
   async function loadGameData() {
     try {
       const res = await fetch('/api/game');
       const data = await res.json();
-      if (data && data.rounds) gameData = data;
+      if (data && data.rounds && data.rounds.length > 0) gameData = data;
     } catch(e) {}
     
     if (!gameData.rounds || gameData.rounds.length === 0) {
@@ -185,7 +118,7 @@
       for (let c = 0; c < 5; c++) {
         gameData.rounds[0].categories.push({
           name: `Категория ${c+1}`,
-          questions: gameData.rounds[0].prices.map((p, i) => ({ price: p, question: `Вопрос ${i+1}`, answer: `Ответ ${i+1}`, mediaUrl: '', isTest: false, isVote: false, isCasino: false, choices: ['', '', ''], casinoType: 'wheel' }))
+          questions: gameData.rounds[0].prices.map((p, i) => ({ price: p, question: `Вопрос ${i+1}`, answer: `Ответ ${i+1}`, mediaUrl: '', isTest: false, isVote: false, isCasino: false, casinoType: 'wheel', extraPoints: 0, choices: ['', '', ''] }))
         });
       }
     }
@@ -193,7 +126,6 @@
     applyTheme();
   }
 
-  // ============ ТЕМА (ОФОРМЛЕНИЕ) ============
   function applyTheme() {
     const s = gameData.settings || {};
     if (s.colors) {
@@ -207,13 +139,12 @@
     if (s.font) document.body.style.fontFamily = s.font + ', sans-serif';
   }
 
-  // ============ ИГРА ============
   function renderScores() {
     const list = document.getElementById('playersList'); list.innerHTML = '';
     if (state.teams && state.teams.length > 0) {
-      state.teams.forEach(t => { list.innerHTML += `<div class="player-card"><span class="pname">${t.name}</span><span class="pscore">${t.score}</span></div>`; });
+      state.teams.forEach(t => { list.innerHTML += `<div class="player-card"><span>${t.name}</span><span class="pscore">${t.score}</span></div>`; });
     } else {
-      [...state.players].sort((a,b) => b.score - a.score).forEach(p => { list.innerHTML += `<div class="player-card"><span class="pname">${p.name}</span><span class="pscore">${p.score}</span></div>`; });
+      [...state.players].sort((a,b) => b.score - a.score).forEach(p => { list.innerHTML += `<div class="player-card"><span>${p.name}</span><span class="pscore">${p.score}</span></div>`; });
     }
   }
 
@@ -248,10 +179,15 @@
       html += `<div id="timerBox" style="font-size:2em; color:#c04040; font-weight:bold; margin:10px 0;">⏳ ${state.timer} сек.</div><div id="voteResults"></div>`;
     } else if (q.isTest) {
       html += `<div style="margin-top:20px; display:flex; flex-direction:column; gap:10px;">`;
-      q.choices.forEach((ch) => { if(ch) html += `<button class="btn" style="background:#fff; border:2px solid var(--pink-deep); color:var(--text);" onclick="revealAnswer()">${ch}</button>`; });
+      q.choices.forEach(ch => { if(ch) html += `<button class="btn" style="background:#fff; border:2px solid var(--pink-deep); color:var(--text);" onclick="revealAnswer()">${ch}</button>`; });
       html += `</div>`;
     } else if (q.isCasino) {
-      html += `<div class="casino-area" id="casinoBlock"></div>`;
+      html += `<div style="background:#fff0f5; padding:15px; border-radius:10px; margin:15px 0; border:2px dashed var(--brown);">
+        <label>Дополнительные баллы (плюс к ставке):</label>
+        <input type="number" id="extraPointsInput" value="0" style="width:100px; margin-bottom:10px;">
+        <br><button class="btn green" onclick="runCasino('${q.casinoType}', ${q.price})">Запустить казино! 🚀</button>
+        <div id="casinoAnimArea"></div>
+      </div>`;
     } else {
       html += `<button class="btn" onclick="revealAnswer()">Показать ответ</button>`;
     }
@@ -260,7 +196,6 @@
     html += `<div id="buzzList" style="margin-top:20px; text-align:left;"></div><div style="margin-top:20px;"><button class="btn red" onclick="closeQuestion()">Закрыть вопрос</button></div>`;
     content.innerHTML = html; modal.classList.add('show'); updateQuestionUI();
     
-    if (q.isCasino) setupCasinoInGame(q);
     if(q.isVote) setInterval(updateVoteUI, 500);
   }
 
@@ -298,90 +233,33 @@
   function scoreCorrect() { const first = state.buzzQueue[0]; if (!first) return; ws.send(JSON.stringify({ type: 'correct', playerId: first.playerId, delta: state.currentQuestion.price })); revealAnswer(); }
   function scoreWrong() { const first = state.buzzQueue[0]; if (!first) return; ws.send(JSON.stringify({ type: 'wrong', playerId: first.playerId })); }
 
-  // ============ КАЗИНО (В ИГРЕ) ============
-  function setupCasinoInGame(q) {
-    const area = document.getElementById('casinoBlock');
-    area.innerHTML = `<h3>Кто играет?</h3>`;
-    const pBox = document.createElement('div'); pBox.className = 'player-select-btns';
-    state.players.forEach((p, i) => {
-      const b = document.createElement('button'); b.className = 'btn'; b.textContent = p.name;
-      b.onclick = () => { pBox.querySelectorAll('.btn').forEach(x => x.classList.remove('selected')); b.classList.add('selected'); startCasinoGame(q.casinoType, q.price, area); };
-      pBox.appendChild(b);
-    });
-    area.appendChild(pBox);
-  }
-
-  function startCasinoGame(type, basePrice, area) {
-    area.innerHTML = '';
-    const resText = document.createElement('div'); resText.style.cssText = 'font-size:1.5em; font-weight:bold; margin-top:20px;'; area.appendChild(resText);
+  // КАЗИНО В ИГРЕ
+  function runCasino(type, basePrice) {
+    const area = document.getElementById('casinoAnimArea');
+    const extra = +document.getElementById('extraPointsInput').value || 0;
+    const totalWin = basePrice + extra;
+    area.innerHTML = '<h3 style="color:var(--brown);">Крутим...</h3>';
     
-    if (type === 'slots') {
-      const slotsDiv = document.createElement('div'); slotsDiv.style.cssText = 'display:flex; gap:15px; justify-content:center; margin:20px 0;';
-      const icons = ['🍌', '🍎', '🍇', '💎', '🍭'];
-      const s1 = document.createElement('div'); s1.className = 'slot'; s1.textContent = '?';
-      const s2 = document.createElement('div'); s2.className = 'slot'; s2.textContent = '?';
-      const s3 = document.createElement('div'); s3.className = 'slot'; s3.textContent = '?';
-      [s1,s2,s3].forEach(s => { s.style.cssText = 'width:100px; height:120px; background:#fff; border:4px solid var(--brown); border-radius:15px; display:flex; align-items:center; justify-content:center; font-size:3.5em; box-shadow:0 5px 15px rgba(0,0,0,0.2);'; slotsDiv.appendChild(s); });
-      area.appendChild(slotsDiv);
-      
-      let count = 0;
-      const int = setInterval(() => {
-        s1.textContent = icons[Math.floor(Math.random()*icons.length)];
-        s2.textContent = icons[Math.floor(Math.random()*icons.length)];
-        s3.textContent = icons[Math.floor(Math.random()*icons.length)];
-        if(++count > 20) {
-          clearInterval(int);
-          if (s1.textContent === s2.textContent && s2.textContent === s3.textContent) resText.textContent = `🎉 ДЖЕКПОТ! +${basePrice} очков!`;
-          else if (s1.textContent === s2.textContent || s2.textContent === s3.textContent || s1.textContent === s3.textContent) resText.textContent = `✨ Два совпадения! +${Math.round(basePrice/2)} очков!`;
-          else resText.textContent = `💥 Не повезло. 0 очков.`;
-        }
-      }, 100);
-    } else {
-      const wheelWrap = document.createElement('div'); wheelWrap.className = 'wheel-container';
-      const pointer = document.createElement('div'); pointer.className = 'wheel-pointer'; pointer.textContent = '▼';
-      const canvas = document.createElement('canvas'); canvas.width = 350; canvas.height = 350; canvas.id = 'wheelCanvas';
-      wheelWrap.appendChild(pointer); wheelWrap.appendChild(canvas); area.appendChild(wheelWrap);
-      
-      const segs = [
-        { label: '+' + basePrice, color: '#7ec97e' }, { label: '-' + basePrice, color: '#c04040' },
-        { label: '0', color: 'var(--brown)' }, { label: 'x2', color: '#ffb347' },
-        { label: '+' + basePrice, color: '#7ec97e' }, { label: '-' + basePrice, color: '#c04040' },
-        { label: '0', color: 'var(--brown)' }, { label: 'x2', color: '#ffb347' }
-      ];
-      drawWheel(canvas, segs, 0);
-      // (логика вращения колеса и начисления очков)
-    }
+    setTimeout(() => {
+      if (type === 'slots') {
+        const isWin = Math.random() > 0.5;
+        area.innerHTML = `<h2 style="color:${isWin ? '#7ec97e' : '#c04040'};">${isWin ? '🎉 Джекпот! +' + totalWin : '💥 Не повезло'}</h2>`;
+      } else {
+        const isWin = Math.random() > 0.5;
+        area.innerHTML = `<h2 style="color:${isWin ? '#7ec97e' : '#c04040'};">${isWin ? '🎡 Колесо дало +' + totalWin : '💥 Колесо дало 0'}</h2>`;
+      }
+    }, 1500);
   }
 
-  function drawWheel(canvas, segs, rotation) {
-    const ctx = canvas.getContext('2d'); const cx = canvas.width/2, cy = canvas.height/2, r = cx - 15;
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    const segAngle = (Math.PI * 2) / segs.length; const offset = -Math.PI / 2 + rotation * Math.PI / 180;
-    segs.forEach((seg, i) => {
-      const start = offset + i * segAngle; const end = start + segAngle;
-      ctx.beginPath(); ctx.moveTo(cx, cy); ctx.arc(cx, cy, r, start, end); ctx.closePath();
-      ctx.fillStyle = seg.color; ctx.fill(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 3; ctx.stroke();
-      ctx.save(); ctx.translate(cx, cy); ctx.rotate(start + segAngle/2); ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
-      ctx.fillStyle = '#fff'; ctx.font = 'bold 18px Arial'; ctx.fillText(seg.label, r - 20, 0); ctx.restore();
-    });
-  }
-
-  // ============ РЕДАКТОР ============
-  function openEditor() { document.getElementById('editor').classList.add('show'); switchTab('rounds'); }
+  // РЕДАКТОР
+  function openEditor() { document.getElementById('editor').classList.add('show'); renderEditorRounds(); }
   function closeEditor() { document.getElementById('editor').classList.remove('show'); }
-  function switchTab(tab) {
-    currentTab = tab;
-    const content = document.getElementById('editorContent'); content.innerHTML = '';
-    if (tab === 'rounds') renderEditorRounds();
-    if (tab === 'theme') renderThemeEditor();
-    if (tab === 'preview') { content.innerHTML = `<h2>Нажмите на ячейку в игре, чтобы увидеть предпросмотр</h2>`; }
-  }
 
   function renderEditorRounds() {
     const content = document.getElementById('editorContent');
     let topBar = document.createElement('div'); topBar.style.display = 'flex'; topBar.style.gap = '10px'; topBar.style.marginBottom = '15px';
-    topBar.innerHTML = `<button class="btn pink" onclick="addCategory()">➕ Добавить категорию</button><button class="btn pink" onclick="addRound()">➕ Добавить раунд</button>`;
-    content.appendChild(topBar);
+    topBar.innerHTML = `<button class="btn pink" onclick="addCategory()">➕ Добавить категорию</button>`;
+    content.innerHTML = ''; content.appendChild(topBar);
 
     const rData = gameData.rounds[edRound];
     rData.categories.forEach((cat, ci) => {
@@ -405,11 +283,11 @@
           <label>Вопрос:</label><textarea rows="2" onchange="gameData.rounds[${edRound}].categories[${ci}].questions[${qi}].question = this.value">${q.question}</textarea>
           <label>Ответ:</label><textarea rows="2" onchange="gameData.rounds[${edRound}].categories[${ci}].questions[${qi}].answer = this.value">${q.answer}</textarea>
           <div style="display:flex; gap:10px; align-items:center; margin-bottom:10px;">
-            <div style="flex:1;"><label>Ссылка на медиа:</label><input type="text" placeholder="https://..." value="${q.mediaUrl || ''}" onchange="gameData.rounds[${edRound}].categories[${ci}].questions[${qi}].mediaUrl = this.value"></div>
-            <div><label>Или загрузить файл:</label><br><input type="file" accept="image/*,video/*,audio/*" onchange="uploadMedia(this, ${ci}, ${qi})"></div>
+            <div style="flex:1;"><label>Ссылка на медиа:</label><input type="text" value="${q.mediaUrl || ''}" onchange="gameData.rounds[${edRound}].categories[${ci}].questions[${qi}].mediaUrl = this.value"></div>
+            <div><label>Или файл:</label><br><input type="file" accept="image/*,video/*,audio/*" onchange="uploadMedia(this, ${ci}, ${qi})"></div>
           </div>
           <div style="margin-top:10px; background:#f0f0f0; padding:10px; border-radius:8px;">
-            <label>Варианты (для Теста или Голосования):</label>
+            <label>Варианты (Тест / Голосование):</label>
             <input type="text" value="${q.choices[0] || ''}" placeholder="Вариант 1" onchange="gameData.rounds[${edRound}].categories[${ci}].questions[${qi}].choices[0] = this.value">
             <input type="text" value="${q.choices[1] || ''}" placeholder="Вариант 2" onchange="gameData.rounds[${edRound}].categories[${ci}].questions[${qi}].choices[1] = this.value">
             <input type="text" value="${q.choices[2] || ''}" placeholder="Вариант 3" onchange="gameData.rounds[${edRound}].categories[${ci}].questions[${qi}].choices[2] = this.value">
@@ -422,20 +300,12 @@
 
   function renderThemeEditor() {
     const content = document.getElementById('editorContent');
-    const s = gameData.settings || {};
-    const c = s.colors || { bg1: '#ffe4ec', bg2: '#ffc2d4', primary: '#6b4226', accent: '#ff9ebb', text: '#4a2c17' };
-    
-    content.innerHTML = `
-      <h2>🎨 Оформление</h2>
+    const s = gameData.settings || {}; const c = s.colors || { bg1: '#ffe4ec', bg2: '#ffc2d4', primary: '#6b4226', accent: '#ff9ebb', text: '#4a2c17' };
+    content.innerHTML = `<h2>🎨 Оформление</h2>
       <div style="display:grid; gap:10px; max-width:600px;">
         <label>Заголовок:</label><input type="text" id="theme_title" value="${s.title || 'Happy Birthday'}" onchange="updateTheme()">
         <label>Смайлик:</label><input type="text" id="theme_emoji" value="${s.emoji || '🎂'}" onchange="updateTheme()">
-        <label>Шрифт:</label>
-        <select id="theme_font" onchange="updateTheme()">
-          <option value="Georgia" ${s.font==='Georgia'?'selected':''}>Georgia</option>
-          <option value="Arial" ${s.font==='Arial'?'selected':''}>Arial</option>
-          <option value="Comic Sans MS" ${s.font==='Comic Sans MS'?'selected':''}>Comic Sans</option>
-        </select>
+        <label>Шрифт:</label><select id="theme_font" onchange="updateTheme()"><option value="Georgia" ${s.font==='Georgia'?'selected':''}>Georgia</option><option value="Arial" ${s.font==='Arial'?'selected':''}>Arial</option></select>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
           <div><label>Фон 1:</label><input type="color" id="theme_bg1" value="${c.bg1}" onchange="updateTheme()"></div>
           <div><label>Фон 2:</label><input type="color" id="theme_bg2" value="${c.bg2}" onchange="updateTheme()"></div>
@@ -443,8 +313,7 @@
           <div><label>Акцент:</label><input type="color" id="theme_accent" value="${c.accent}" onchange="updateTheme()"></div>
           <div><label>Текст:</label><input type="color" id="theme_text" value="${c.text}" onchange="updateTheme()"></div>
         </div>
-      </div>
-    `;
+      </div>`;
   }
 
   function updateTheme() {
@@ -453,49 +322,29 @@
     gameData.settings.emoji = document.getElementById('theme_emoji').value;
     gameData.settings.font = document.getElementById('theme_font').value;
     gameData.settings.colors = {
-      bg1: document.getElementById('theme_bg1').value,
-      bg2: document.getElementById('theme_bg2').value,
-      primary: document.getElementById('theme_primary').value,
-      accent: document.getElementById('theme_accent').value,
-      text: document.getElementById('theme_text').value
+      bg1: document.getElementById('theme_bg1').value, bg2: document.getElementById('theme_bg2').value,
+      primary: document.getElementById('theme_primary').value, accent: document.getElementById('theme_accent').value, text: document.getElementById('theme_text').value
     };
     applyTheme();
   }
 
   function addCategory() {
     const rData = gameData.rounds[edRound];
-    rData.categories.push({ name: "Новая категория", questions: rData.prices.map(price => ({ price, question: "", answer: "", mediaUrl: "", isTest: false, isVote: false, isCasino: false, casinoType: 'wheel', choices: ['', '', ''] })) });
+    rData.categories.push({ name: "Новая категория", questions: rData.prices.map(price => ({ price, question: "", answer: "", mediaUrl: "", isTest: false, isVote: false, isCasino: false, casinoType: 'wheel', extraPoints: 0, choices: ['', '', ''] })) });
     renderEditorRounds();
   }
 
-  function addRound() {
-    const p = [100, 200, 300, 400, 500]; const cats = [];
-    for (let c = 0; c < 5; c++) { cats.push({ name: `Новая категория`, questions: p.map(price => ({ price, question: "", answer: "", mediaUrl: "", isTest: false, isVote: false, isCasino: false, casinoType: 'wheel', choices: ['', '', ''] })) }); }
-    gameData.rounds.push({ name: `Раунд ${gameData.rounds.length+1}`, prices: p, categories: cats });
-    edRound = gameData.rounds.length - 1; renderEditorRounds();
-  }
-
   function deleteCategory(ci) { if(confirm('Удалить категорию?')) { gameData.rounds[edRound].categories.splice(ci, 1); renderEditorRounds(); } }
-
-  function uploadMedia(input, ci, qi) {
-    const file = input.files[0]; if (!file) return;
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      gameData.rounds[edRound].categories[ci].questions[qi].mediaUrl = e.target.result;
-      alert('Файл загружен в редактор! Не забудьте нажать "Сохранить".');
-    };
-    reader.readAsDataURL(file);
-  }
+  function uploadMedia(input, ci, qi) { const file = input.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(e) { gameData.rounds[edRound].categories[ci].questions[qi].mediaUrl = e.target.result; alert('Файл загружен!'); }; reader.readAsDataURL(file); }
 
   async function saveGameData() {
     try {
       const res = await fetch('/api/game', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ gameData }) });
-      if (res.ok) alert('Всё сохранено в облако!');
-      else alert('Ошибка сохранения (файл слишком большой).');
+      if (res.ok) alert('Всё сохранено в облако!'); else alert('Ошибка сохранения.');
     } catch(e) { alert('Ошибка сети'); }
   }
 
-  connect(); toggleFormat();
+  connect(); loadGameData();
 </script>
 </body>
 </html>
